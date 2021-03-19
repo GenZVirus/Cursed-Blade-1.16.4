@@ -39,6 +39,8 @@ public class CursedBlade {
 	public static boolean FIRE_ASPECT = false;
 	public static int POISON = 0;
 	public static int WITHER = 0;
+	public static int HUNGER = 0;
+	public static int EXHAUST = 0;
 
 	// Directly reference a log4j logger.
 	@SuppressWarnings("unused")

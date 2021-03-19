@@ -7,6 +7,7 @@ import com.GenZVirus.CursedBlade.CursedBlade;
 import net.minecraft.item.IItemTier;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.LazyValue;
 import net.minecraftforge.fml.RegistryObject;
@@ -17,11 +18,11 @@ public class ItemInit {
 
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, CursedBlade.MOD_ID);
 
-	public static final RegistryObject<Item> CURSED_BLADE = ITEMS.register("cursed_blade", ()-> new com.GenZVirus.CursedBlade.Common.Item.CursedBlade(ModItemTier.MATERIAL_CURSED, new Item.Properties().group(ItemGroup.COMBAT)));
+	public static final RegistryObject<Item> CURSED_BLADE = ITEMS.register("cursed_blade", ()-> new com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon(ModItemTier.MATERIAL_CURSED, new Item.Properties().group(ItemGroup.COMBAT)));
 	
 	public enum ModItemTier implements IItemTier{
 		MATERIAL_CURSED(0, 0, 16.0F, 0.0F, 250, () -> {
-			return null;
+			return Ingredient.fromItems(Items.BEDROCK);
 		}); 
 		
 		private final int harvestLevel;

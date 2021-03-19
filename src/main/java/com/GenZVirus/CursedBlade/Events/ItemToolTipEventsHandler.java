@@ -4,16 +4,22 @@ import java.util.List;
 
 import com.GenZVirus.CursedBlade.CursedBlade;
 import com.GenZVirus.CursedBlade.Common.Config;
+import com.GenZVirus.CursedBlade.Common.RenderCursedPlayerPose;
+import com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiScreenEvent.KeyboardKeyPressedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.MouseClickedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.MouseReleasedEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -21,14 +27,30 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
 @Mod.EventBusSubscriber(modid = CursedBlade.MOD_ID, bus = Bus.FORGE, value = Dist.CLIENT)
 public class ItemToolTipEventsHandler {
-	
+
 	public static Minecraft mc = Minecraft.getInstance();
 
 	@SubscribeEvent
-	public static void heavyTitaniumArmorSet(ItemTooltipEvent event) {
+	public static void renderBlock(RenderHandEvent event) {
+		if (event.getItemStack().getItem() instanceof CursedBladeWeapon && mc.gameSettings.keyBindUseItem.isKeyDown()) {
+			event.getMatrixStack().rotate(new Quaternion(-60, 0, 0, true));
+			event.getMatrixStack().translate(0, 0.6D, 0);
+		}
+	}
+	
+	@SubscribeEvent(receiveCanceled = true)
+	public static void renderPlayer(RenderPlayerEvent event) {
+		if(event.getPlayer().getActiveItemStack().getItem() instanceof CursedBladeWeapon) {
+			event.setCanceled(true);
+			RenderCursedPlayerPose.renderPlayer((AbstractClientPlayerEntity) event.getPlayer(), event.getPlayer().rotationYaw, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight(), event.getRenderer().getEntityModel(), event.getRenderer().layerRenderers);
+		}
+	}
+
+	@SubscribeEvent
+	public static void ToolTip(ItemTooltipEvent event) {
 		if (event.getPlayer() == null)
 			return;
-		if (!(event.getItemStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade))
+		if (!(event.getItemStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon))
 			return;
 
 		List<ITextComponent> text = Lists.newArrayList();
@@ -79,12 +101,22 @@ public class ItemToolTipEventsHandler {
 
 		if (CursedBlade.POISON > 0) {
 			// Add Poison
-			text.add(new TranslationTextComponent("\u00A72" + "Poison " + CursedBlade.POISON));
+			text.add(new TranslationTextComponent("\u00A7a" + "Poison " + CursedBlade.POISON));
 		}
 
 		if (CursedBlade.WITHER > 0) {
 			// Add Wither
 			text.add(new TranslationTextComponent("\u00A78" + "Wither " + CursedBlade.WITHER));
+		}
+		
+		if (CursedBlade.HUNGER > 0) {
+			// Add Hunger
+			text.add(new TranslationTextComponent("\u00A72" + "Hunger " + CursedBlade.HUNGER));
+		}
+
+		if (CursedBlade.EXHAUST > 0) {
+			// Add Wither
+			text.add(new TranslationTextComponent("\u00A74" + "Exhaust " + CursedBlade.EXHAUST));
 		}
 
 		// Add Damage
@@ -96,23 +128,28 @@ public class ItemToolTipEventsHandler {
 
 	@SubscribeEvent(receiveCanceled = true)
 	public static void mouseclick(MouseClickedEvent.Pre event) {
-		if(mc.player == null) return;
-		if(mc.player.isCreative()) return;
+		if (mc.player == null)
+			return;
+		if (mc.player.isCreative())
+			return;
 		if (event.getGui() instanceof ContainerScreen) {
 			if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse() != null) {
-				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon) {
 					event.setCanceled(true);
 				}
 			}
 		}
 	}
+
 	@SubscribeEvent(receiveCanceled = true)
 	public static void mouseclick(MouseReleasedEvent.Pre event) {
-		if(mc.player == null) return;
-		if(mc.player.isCreative()) return;
+		if (mc.player == null)
+			return;
+		if (mc.player.isCreative())
+			return;
 		if (event.getGui() instanceof ContainerScreen) {
 			if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse() != null) {
-				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon) {
 					event.setCanceled(true);
 				}
 			}
@@ -121,11 +158,13 @@ public class ItemToolTipEventsHandler {
 
 	@SubscribeEvent(receiveCanceled = true)
 	public static void keyPressed(KeyboardKeyPressedEvent.Pre event) {
-		if(mc.player == null) return;
-		if(mc.player.isCreative()) return;
+		if (mc.player == null)
+			return;
+		if (mc.player.isCreative())
+			return;
 		if (event.getGui() instanceof ContainerScreen) {
 			if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse() != null) {
-				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon) {
 					event.setCanceled(true);
 				}
 				if (event.getKeyCode() == 49) {

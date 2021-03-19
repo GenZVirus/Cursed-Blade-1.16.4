@@ -19,8 +19,10 @@ public class SendCursedPlayerData {
 	public int poison;
 	public int wither;
 	public String status;
+	public int hunger;
+	public int exhaust;
 
-	public SendCursedPlayerData(int kill_counter, int attack_damage, int life_steal, boolean destroy_absorption, boolean destroy_shields, boolean fire_aspect, int poison, int wither, String status) {
+	public SendCursedPlayerData(int kill_counter, int attack_damage, int life_steal, boolean destroy_absorption, boolean destroy_shields, boolean fire_aspect, int poison, int wither, String status, int hunger, int exhaust) {
 		this.kill_counter = kill_counter;
 		this.attack_damage = attack_damage;
 		this.life_steal = life_steal;
@@ -30,6 +32,8 @@ public class SendCursedPlayerData {
 		this.poison = poison;
 		this.wither = wither;
 		this.status = status;
+		this.hunger = hunger;
+		this.exhaust = exhaust;
 	}
 
 	public static void encode(SendCursedPlayerData pkt, PacketBuffer buf) {
@@ -42,10 +46,12 @@ public class SendCursedPlayerData {
 		buf.writeInt(pkt.poison);
 		buf.writeInt(pkt.wither);
 		buf.writeString(pkt.status);
+		buf.writeInt(pkt.hunger);
+		buf.writeInt(pkt.exhaust);
 	}
 
 	public static SendCursedPlayerData decode(PacketBuffer buf) {
-		return new SendCursedPlayerData(buf.readInt(), buf.readInt(), buf.readInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readString());
+		return new SendCursedPlayerData(buf.readInt(), buf.readInt(), buf.readInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readString(), buf.readInt(), buf.readInt());
 	}
 
 	public static void handle(SendCursedPlayerData pkt, Supplier<NetworkEvent.Context> ctx) {
@@ -61,6 +67,8 @@ public class SendCursedPlayerData {
 				CursedBlade.POISON = pkt.poison;
 				CursedBlade.WITHER = pkt.wither;
 				CursedBlade.STATUS = pkt.status;
+				CursedBlade.HUNGER = pkt.hunger;
+				CursedBlade.EXHAUST = pkt.exhaust;
 			}
 		});
 		ctx.get().setPacketHandled(true);

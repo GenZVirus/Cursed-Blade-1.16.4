@@ -5,11 +5,14 @@ import java.util.Random;
 import com.GenZVirus.CursedBlade.CursedBlade;
 import com.GenZVirus.CursedBlade.Common.Config;
 import com.GenZVirus.CursedBlade.Common.Init.ItemInit;
+import com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon;
+import com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon.CursedDamage;
 import com.GenZVirus.CursedBlade.Common.Network.PacketHandlerCommon;
 import com.GenZVirus.CursedBlade.Common.Network.Packets.SendCursedPlayerData;
 import com.GenZVirus.CursedBlade.File.XMLFileJava;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.item.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -20,6 +23,7 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -45,10 +49,11 @@ public class Events {
 	public static void onBlockHit(LeftClickBlock event) {
 		if (event.getWorld().isRemote())
 			return;
-		if (event.getPlayer().getHeldItemMainhand().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
-			if (((com.GenZVirus.CursedBlade.Common.Item.CursedBlade) event.getPlayer().getHeldItemMainhand().getItem()).getAttackDamage() >= Config.COMMON.whenToBreakBlocks.get()) {
+		if (event.getPlayer().getHeldItemMainhand().getItem() instanceof CursedBladeWeapon) {
+			if (((CursedBladeWeapon) event.getPlayer().getHeldItemMainhand().getItem()).getAttackDamage() >= Config.COMMON.whenToBreakBlocks.get()) {
 				event.getWorld().destroyBlock(event.getPos(), false);
-				event.getWorld().playSound(null, event.getPos(), SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F, (1.0F + (new Random().nextFloat() - new Random().nextFloat()) * 0.2F) * 0.7F);
+				event.getWorld().playSound(null, event.getPos(), SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F,
+						(1.0F + (new Random().nextFloat() - new Random().nextFloat()) * 0.2F) * 0.7F);
 			} else
 				return;
 		} else {
@@ -57,55 +62,106 @@ public class Events {
 	}
 
 	@SubscribeEvent(receiveCanceled = true)
-	public static void CursedBladeDamage(LivingAttackEvent event) {
-		if (event.getEntityLiving().world.isRemote) { return; }
-		if (!(event.getSource().getTrueSource() instanceof PlayerEntity)) { return; }
-		if (!(((PlayerEntity) event.getSource().getTrueSource()).getHeldItemMainhand().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade))
+	public static void CursedBladeAttack(LivingAttackEvent event) {
+		if (event.getEntityLiving().world.isRemote) {
 			return;
-		applyEffects(CursedBlade.CURSED_PLAYER.inventory.getStackInSlot(0), event.getEntityLiving(), CursedBlade.CURSED_PLAYER);
+		}
+		if (!(event.getSource().getTrueSource() instanceof PlayerEntity)) {
+			return;
+		}
+		if (!(((PlayerEntity) event.getSource().getTrueSource()).getHeldItemMainhand().getItem() instanceof CursedBladeWeapon))
+			return;
+		PlayerEntity player = (PlayerEntity) event.getSource().getTrueSource();
+		if (!event.getSource().equals(CursedDamage.CURSED_DAMAGE)) {
+			event.setCanceled(true);
+			applyEffectsOnHit(player.inventory.getStackInSlot(0), event.getEntityLiving(), player);
+			event.getEntityLiving().attackEntityFrom(CursedBladeWeapon.CursedDamage.CURSED_DAMAGE, ((CursedBladeWeapon) player.getHeldItemMainhand().getItem()).getAttackDamage());
+		}
 	}
 
-	public static void applyEffects(ItemStack stack, LivingEntity target, PlayerEntity attacker) {
-
-		// Apply absorption destruction
-
-		if (target.getAbsorptionAmount() > 0 && Config.COMMON.destroyAbsorption.get() && com.GenZVirus.CursedBlade.CursedBlade.DESTROY_ABSORPTION)
-			target.setAbsorptionAmount(0);
+	public static void applyEffectsOnHit(ItemStack stack, LivingEntity target, PlayerEntity attacker) {
 
 		// Apply life steal
 
-		attacker.heal((float) (((com.GenZVirus.CursedBlade.Common.Item.CursedBlade) attacker.inventory.getStackInSlot(0).getItem()).getAttackDamage() * Config.COMMON.life_steal_ratio.get() * com.GenZVirus.CursedBlade.CursedBlade.LIFE_STEAL));
+		attacker.heal((float) (((CursedBladeWeapon) attacker.inventory.getStackInSlot(0).getItem()).getAttackDamage() * Config.COMMON.life_steal_ratio.get() * CursedBlade.LIFE_STEAL));
 
 		// Apply shield destruction
 
-		if (target.getActiveItemStack().getItem() instanceof ShieldItem && com.GenZVirus.CursedBlade.CursedBlade.DESTROY_SHIELDS) {
+		if (target.getActiveItemStack().getItem() instanceof ShieldItem && CursedBlade.DESTROY_SHIELDS) {
 			target.getActiveItemStack().setDamage(0);
 		}
 
+		applyEffects(stack, target, attacker);
+
+		// Sweep
+
+		if (attacker instanceof PlayerEntity) {
+
+			float f3 = 1.0F + 0.2F * ((CursedBladeWeapon) attacker.getHeldItemMainhand().getItem()).getAttackDamage();
+
+			for (LivingEntity livingentity : attacker.world.getEntitiesWithinAABB(LivingEntity.class, target.getBoundingBox().grow(1.0D, 0.25D, 1.0D))) {
+				if (livingentity != attacker && livingentity != target && !attacker.isOnSameTeam(livingentity)
+						&& (!(livingentity instanceof ArmorStandEntity) || !((ArmorStandEntity) livingentity).hasMarker()) && attacker.getDistanceSq(livingentity) < 9.0D) {
+					livingentity.applyKnockback(0.4F, (double) MathHelper.sin(attacker.rotationYaw * ((float) Math.PI / 180F)),
+							(double) (-MathHelper.cos(attacker.rotationYaw * ((float) Math.PI / 180F))));
+					livingentity.attackEntityFrom(CursedDamage.CURSED_DAMAGE, f3);
+				}
+			}
+			attacker.world.playSound((PlayerEntity) null, attacker.getPosX(), attacker.getPosY(), attacker.getPosZ(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, attacker.getSoundCategory(), 1.0F, 1.0F);
+			((PlayerEntity) attacker).spawnSweepParticles();
+		}
+		stack.damageItem(1, attacker, (entity) -> {
+			entity.sendBreakAnimation(EquipmentSlotType.MAINHAND);
+		});
+
+	}
+
+	public static void applyEffects(ItemStack stack, LivingEntity target, PlayerEntity attacker) {
+		// Apply absorption destruction
+
+		if (target.getAbsorptionAmount() > 0 && Config.COMMON.destroyAbsorption.get() && CursedBlade.DESTROY_ABSORPTION)
+			target.setAbsorptionAmount(0);
+
 		// Apply fire damage for 5 seconds
-		if (com.GenZVirus.CursedBlade.CursedBlade.FIRE_ASPECT) {
+		if (CursedBlade.FIRE_ASPECT) {
 			target.setFire(5);
 		}
 
 		// Apply poison for 5 seconds
 
-		if (com.GenZVirus.CursedBlade.CursedBlade.POISON > 0) {
-			target.addPotionEffect(new EffectInstance(Effects.POISON, 100, com.GenZVirus.CursedBlade.CursedBlade.POISON - 1));
+		if (CursedBlade.POISON > 0) {
+			target.addPotionEffect(new EffectInstance(Effects.POISON, 100, CursedBlade.POISON - 1));
 		}
 
 		// Apply wither for 5 seconds
 
-		if (com.GenZVirus.CursedBlade.CursedBlade.WITHER > 0) {
-			target.addPotionEffect(new EffectInstance(Effects.WITHER, 100, com.GenZVirus.CursedBlade.CursedBlade.WITHER - 1));
+		if (CursedBlade.WITHER > 0) {
+			target.addPotionEffect(new EffectInstance(Effects.WITHER, 100, CursedBlade.WITHER - 1));
+		}
+
+		if (CursedBlade.HUNGER > 0) {
+			target.addPotionEffect(new EffectInstance(Effects.HUNGER, 100, CursedBlade.HUNGER - 1));
+		}
+
+		if (CursedBlade.EXHAUST > 0) {
+			target.addPotionEffect(new EffectInstance(Effects.BLINDNESS, 100, CursedBlade.EXHAUST - 1));
+			target.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 100, CursedBlade.EXHAUST - 1));
+			target.addPotionEffect(new EffectInstance(Effects.MINING_FATIGUE, 100, CursedBlade.EXHAUST - 1));
 		}
 
 	}
 
 	@SubscribeEvent
 	public static void onCursedPlayerKilledByPlayer(LivingDeathEvent event) {
-		if (event.getEntityLiving().world.isRemote) { return; }
-		if (!(event.getEntityLiving() instanceof PlayerEntity)) { return; }
-		if (CursedBlade.CURSED_PLAYER == null) { return; }
+		if (event.getEntityLiving().world.isRemote) {
+			return;
+		}
+		if (!(event.getEntityLiving() instanceof PlayerEntity)) {
+			return;
+		}
+		if (CursedBlade.CURSED_PLAYER == null) {
+			return;
+		}
 		if (CursedBlade.CURSED_PLAYER.equals(event.getEntityLiving()) && event.getSource().getTrueSource() instanceof PlayerEntity) {
 			CursedBlade.CURSED_PLAYER = (ServerPlayerEntity) event.getSource().getTrueSource();
 			CursedBlade.PLAYER_UUID = event.getSource().getTrueSource().getUniqueID();
@@ -134,12 +190,15 @@ public class Events {
 		if (!(event.getSource().getTrueSource() instanceof PlayerEntity))
 			return;
 		PlayerEntity player = (PlayerEntity) event.getSource().getTrueSource();
-		if (player.getHeldItemMainhand().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+		if (player.getHeldItemMainhand().getItem() instanceof CursedBladeWeapon) {
 			XMLFileJava.addOne("KillCount");
 			XMLFileJava.checkForUpgrades();
-			((com.GenZVirus.CursedBlade.Common.Item.CursedBlade) player.getHeldItemMainhand().getItem()).reload();
+			((CursedBladeWeapon) player.getHeldItemMainhand().getItem()).reload();
 			player.getAttributeManager().reapplyModifiers(player.getHeldItemMainhand().getAttributeModifiers(EquipmentSlotType.MAINHAND));
-			PacketHandlerCommon.INSTANCE.sendTo(new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS, CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS), CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+			PacketHandlerCommon.INSTANCE.sendTo(
+					new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS,
+							CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS, CursedBlade.HUNGER, CursedBlade.EXHAUST),
+					CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
 		}
 	}
 
@@ -152,7 +211,7 @@ public class Events {
 		if (event.getSource().getTrueSource() instanceof PlayerEntity)
 			return;
 		for (int i = 0; i < ((PlayerEntity) event.getEntityLiving()).inventory.getSizeInventory(); i++) {
-			if (((PlayerEntity) event.getEntityLiving()).inventory.getStackInSlot(i).getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+			if (((PlayerEntity) event.getEntityLiving()).inventory.getStackInSlot(i).getItem() instanceof CursedBladeWeapon) {
 				((PlayerEntity) event.getEntityLiving()).inventory.removeStackFromSlot(i);
 			}
 		}
@@ -160,7 +219,7 @@ public class Events {
 
 	@SubscribeEvent(receiveCanceled = true)
 	public static void onItemToss(ItemTossEvent event) {
-		if (event.getEntityItem().getItem().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+		if (event.getEntityItem().getItem().getItem() instanceof CursedBladeWeapon) {
 			event.getEntityItem().setNoPickupDelay();
 			;
 			mustReload = true;
@@ -175,7 +234,9 @@ public class Events {
 			event.setCanceled(true);
 		} else {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-			if (!(event.getItem().getItem().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade)) { return; }
+			if (!(event.getItem().getItem().getItem() instanceof CursedBladeWeapon)) {
+				return;
+			}
 			if (CursedBlade.PLAYER_UUID == null) {
 				CursedBlade.PLAYER_UUID = player.getUniqueID();
 				CursedBlade.CURSED_PLAYER = player;
@@ -187,7 +248,10 @@ public class Events {
 					CursedBlade.CURSED_PLAYER.inventory.removeStackFromSlot(0);
 				}
 				XMLFileJava.save(CursedBlade.CURSED_PLAYER);
-				PacketHandlerCommon.INSTANCE.sendTo(new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS, CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS), CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+				PacketHandlerCommon.INSTANCE.sendTo(
+						new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS,
+								CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS, CursedBlade.HUNGER, CursedBlade.EXHAUST),
+						CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
 				mustReload = true;
 			} else if (!CursedBlade.PLAYER_UUID.equals(player.getUniqueID())) {
 				event.setCanceled(true);
@@ -213,11 +277,11 @@ public class Events {
 	public static void mustReload(ServerTickEvent event) {
 		if (CursedBlade.CURSED_PLAYER == null)
 			return;
-		if (!(CursedBlade.CURSED_PLAYER.inventory.getStackInSlot(0).getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade))
+		if (!(CursedBlade.CURSED_PLAYER.inventory.getStackInSlot(0).getItem() instanceof CursedBladeWeapon))
 			return;
 		if (mustReload && !CursedBlade.CURSED_PLAYER.inventory.getStackInSlot(0).isEmpty()) {
 			mustReload = false;
-			((com.GenZVirus.CursedBlade.Common.Item.CursedBlade) CursedBlade.CURSED_PLAYER.inventory.getStackInSlot(0).getItem()).reload();
+			((CursedBladeWeapon) CursedBlade.CURSED_PLAYER.inventory.getStackInSlot(0).getItem()).reload();
 		}
 	}
 
@@ -233,7 +297,7 @@ public class Events {
 			CursedBlade.CURSED_PLAYER = (ServerPlayerEntity) event.getPlayer();
 			boolean hasWeapon = false;
 			for (int i = 0; i < ((PlayerEntity) event.getEntityLiving()).inventory.getSizeInventory(); i++) {
-				if (((PlayerEntity) event.getEntityLiving()).inventory.getStackInSlot(i).getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+				if (((PlayerEntity) event.getEntityLiving()).inventory.getStackInSlot(i).getItem() instanceof CursedBladeWeapon) {
 					hasWeapon = true;
 					break;
 				}
@@ -249,7 +313,10 @@ public class Events {
 				CursedBlade.CURSED_PLAYER.inventory.addItemStackToInventory(new ItemStack(ItemInit.CURSED_BLADE.get()));
 			}
 			XMLFileJava.load(event.getPlayer());
-			PacketHandlerCommon.INSTANCE.sendTo(new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS, CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS), CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+			PacketHandlerCommon.INSTANCE.sendTo(
+					new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS,
+							CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS, CursedBlade.HUNGER, CursedBlade.EXHAUST),
+					CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
 		}
 		mustReload = true;
 	}
@@ -285,7 +352,10 @@ public class Events {
 					event.getPlayer().dropItem(stack, false);
 				}
 			}
-			PacketHandlerCommon.INSTANCE.sendTo(new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS, CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS), CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+			PacketHandlerCommon.INSTANCE.sendTo(
+					new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS,
+							CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS, CursedBlade.HUNGER, CursedBlade.EXHAUST),
+					CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
 		}
 	}
 
@@ -296,8 +366,11 @@ public class Events {
 
 	@SubscribeEvent(receiveCanceled = true)
 	public static void cursedPlayerItemFrame(EntityInteract event) {
-		if (event.getTarget() instanceof ItemFrameEntity && event.getItemStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBlade) {
+		if (event.getTarget() instanceof ItemFrameEntity && event.getItemStack().getItem() instanceof CursedBladeWeapon) {
 			event.setCanceled(true);
+		}
+		if (event.getTarget() instanceof LivingEntity && event.getItemStack().getItem() instanceof CursedBladeWeapon) {
+			applyEffects(event.getItemStack(), (LivingEntity) event.getTarget(), event.getPlayer());
 		}
 	}
 }

@@ -34,6 +34,8 @@ public class XMLFileJava {
 	private static final int default_life_steal = 0;
 	private static final int default_poison = 0;
 	private static final int default_wither = 0;
+	private static final int default_hunger = 0;
+	private static final int default_exhaust = 0;
 	private static final String default_fire_aspect = "false";
 	private static final String default_absorption_dest = "false";
 	private static final String default_shield_dest = "false";
@@ -46,7 +48,9 @@ public class XMLFileJava {
 
 			File file = new File(default_xmlFilePath);
 			File parent = file.getParentFile();
-			if (!parent.exists() && !parent.mkdirs()) { throw new IllegalStateException("Couldn't create dir: " + parent); }
+			if (!parent.exists() && !parent.mkdirs()) {
+				throw new IllegalStateException("Couldn't create dir: " + parent);
+			}
 
 			DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
 
@@ -77,6 +81,16 @@ public class XMLFileJava {
 			Element wither = document.createElement("Wither");
 			wither.appendChild(document.createTextNode(Integer.toString(default_wither)));
 			root.appendChild(wither);
+
+			// Enabled or Disabled
+			Element hunger = document.createElement("Hunger");
+			hunger.appendChild(document.createTextNode(Integer.toString(default_hunger)));
+			root.appendChild(hunger);
+
+			// Enabled or Disabled
+			Element exhaust = document.createElement("Exhaust");
+			exhaust.appendChild(document.createTextNode(Integer.toString(default_exhaust)));
+			root.appendChild(exhaust);
 
 			// Enabled or Disabled
 			Element fire_aspect = document.createElement("FireAspect");
@@ -222,10 +236,13 @@ public class XMLFileJava {
 	}
 
 	public static void upgrade() {
-		if (Boolean.parseBoolean(XMLFileJava.readElement("FireAspect")) && Boolean.parseBoolean(XMLFileJava.readElement("AbsorptionDestruction")) && Boolean.parseBoolean(XMLFileJava.readElement("ShieldDestruction")) && Integer.parseInt(XMLFileJava.readElement("LifeSteal")) >= 100 && Integer.parseInt(XMLFileJava.readElement("Poison")) >= 255 && Integer.parseInt(XMLFileJava.readElement("Wither")) >= 255)
+		if (Boolean.parseBoolean(XMLFileJava.readElement("FireAspect")) && Boolean.parseBoolean(XMLFileJava.readElement("AbsorptionDestruction"))
+				&& Boolean.parseBoolean(XMLFileJava.readElement("ShieldDestruction")) && Integer.parseInt(XMLFileJava.readElement("LifeSteal")) >= 100
+				&& Integer.parseInt(XMLFileJava.readElement("Poison")) >= 255 && Integer.parseInt(XMLFileJava.readElement("Wither")) >= 255
+				&& Integer.parseInt(XMLFileJava.readElement("Hunger")) >= 255 && Integer.parseInt(XMLFileJava.readElement("Exhaust")) >= 255)
 			return;
 		Random rand = new Random();
-		int max = 6;
+		int max = 8;
 		int upgrade = rand.nextInt(max);
 		switch (upgrade) {
 		case 0: {
@@ -276,6 +293,22 @@ public class XMLFileJava {
 				upgrade = rand.nextInt(max);
 			}
 		}
+		case 6: {
+			if (Integer.parseInt(XMLFileJava.readElement("Hunger")) < 255) {
+				XMLFileJava.addOne("Hunger");
+				break;
+			} else {
+				upgrade = rand.nextInt(max);
+			}
+		}
+		case 7: {
+			if (Integer.parseInt(XMLFileJava.readElement("Exhaust")) < 255) {
+				XMLFileJava.addOne("Exhaust");
+				break;
+			} else {
+				upgrade = rand.nextInt(max);
+			}
+		}
 		default:
 			break;
 		}
@@ -286,6 +319,8 @@ public class XMLFileJava {
 		XMLFileJava.editElement("LifeSteal", Integer.toString(default_life_steal));
 		XMLFileJava.editElement("Poison", Integer.toString(default_poison));
 		XMLFileJava.editElement("Wither", Integer.toString(default_wither));
+		XMLFileJava.editElement("Hunger", Integer.toString(default_hunger));
+		XMLFileJava.editElement("Exhaust", Integer.toString(default_exhaust));
 		XMLFileJava.editElement("FireAspect", default_fire_aspect);
 		XMLFileJava.editElement("AbsorptionDestruction", default_absorption_dest);
 		XMLFileJava.editElement("ShieldDestruction", default_shield_dest);
@@ -302,6 +337,10 @@ public class XMLFileJava {
 			XMLFileJava.editElement("Poison", Integer.toString(default_poison));
 		} else if (elementTag.equals("Wither")) {
 			XMLFileJava.editElement("Wither", Integer.toString(default_wither));
+		} else if (elementTag.equals("Hunger")) {
+			XMLFileJava.editElement("Hunger", Integer.toString(default_hunger));
+		} else if (elementTag.equals("Exhaust")) {
+			XMLFileJava.editElement("Exhaust", Integer.toString(default_exhaust));
 		} else if (elementTag.equals("AbsorptionDestruction")) {
 			XMLFileJava.editElement("AbsorptionDestruction", default_absorption_dest);
 		} else if (elementTag.equals("ShieldDestruction")) {
@@ -319,6 +358,8 @@ public class XMLFileJava {
 		CursedBlade.LIFE_STEAL = Integer.parseInt(XMLFileJava.readElement("LifeSteal"));
 		CursedBlade.POISON = Integer.parseInt(XMLFileJava.readElement("Poison"));
 		CursedBlade.WITHER = Integer.parseInt(XMLFileJava.readElement("Wither"));
+		CursedBlade.HUNGER = Integer.parseInt(XMLFileJava.readElement("Hunger"));
+		CursedBlade.EXHAUST = Integer.parseInt(XMLFileJava.readElement("Exhaust"));
 		CursedBlade.FIRE_ASPECT = Boolean.parseBoolean(XMLFileJava.readElement("FireAspect"));
 		CursedBlade.DESTROY_ABSORPTION = Boolean.parseBoolean(XMLFileJava.readElement("AbsorptionDestruction"));
 		CursedBlade.DESTROY_SHIELDS = Boolean.parseBoolean(XMLFileJava.readElement("ShieldDestruction"));
@@ -338,6 +379,8 @@ public class XMLFileJava {
 			XMLFileJava.editElement("LifeSteal", Integer.toString(CursedBlade.LIFE_STEAL));
 			XMLFileJava.editElement("Poison", Integer.toString(CursedBlade.POISON));
 			XMLFileJava.editElement("Wither", Integer.toString(CursedBlade.WITHER));
+			XMLFileJava.editElement("Hunger", Integer.toString(CursedBlade.HUNGER));
+			XMLFileJava.editElement("Exhaust", Integer.toString(CursedBlade.EXHAUST));
 			XMLFileJava.editElement("FireAspect", Boolean.toString(CursedBlade.FIRE_ASPECT));
 			XMLFileJava.editElement("AbsorptionDestruction", Boolean.toString(CursedBlade.DESTROY_ABSORPTION));
 			XMLFileJava.editElement("ShieldDestruction", Boolean.toString(CursedBlade.DESTROY_SHIELDS));
