@@ -134,7 +134,7 @@ public class ItemToolTipEventsHandler {
 			return;
 		if (event.getGui() instanceof ContainerScreen) {
 			if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse() != null) {
-				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon) {
+				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof CursedBladeWeapon) {
 					event.setCanceled(true);
 				}
 			}
@@ -149,7 +149,7 @@ public class ItemToolTipEventsHandler {
 			return;
 		if (event.getGui() instanceof ContainerScreen) {
 			if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse() != null) {
-				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon) {
+				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof CursedBladeWeapon) {
 					event.setCanceled(true);
 				}
 			}
@@ -164,7 +164,7 @@ public class ItemToolTipEventsHandler {
 			return;
 		if (event.getGui() instanceof ContainerScreen) {
 			if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse() != null) {
-				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon) {
+				if (((ContainerScreen<?>) event.getGui()).getSlotUnderMouse().getStack().getItem() instanceof CursedBladeWeapon) {
 					event.setCanceled(true);
 				}
 				if (event.getKeyCode() == 49) {

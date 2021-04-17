@@ -24,7 +24,7 @@ import com.GenZVirus.CursedBlade.CursedBlade;
 import com.GenZVirus.CursedBlade.Common.Config;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.nbt.CompoundNBT;
 
 public class XMLFileJava {
 
@@ -204,14 +204,7 @@ public class XMLFileJava {
 		}
 	}
 
-	public static void checkFileAndMake(PlayerEntity player) {
-
-		if (!(player.getServer() instanceof DedicatedServer)) {
-			IntegratedServerHelper.setIntegratedServerAddress();
-		} else {
-			default_xmlFilePath = "CursedBlade/database.xml";
-		}
-
+	public static void checkFileAndMake() {
 		File file = new File(default_xmlFilePath);
 		boolean found = file.exists();
 
@@ -351,8 +344,7 @@ public class XMLFileJava {
 
 	}
 
-	public static void load(PlayerEntity player) {
-		checkFileAndMake(player);
+	public static void loadDamage() {
 		CursedBlade.KILL_COUNTER = Integer.parseInt(XMLFileJava.readElement("KillCount"));
 		CursedBlade.ATTACK_DAMAGE = (int) (Config.COMMON.starting_attack_damage.get() + CursedBlade.KILL_COUNTER * Config.COMMON.damage_ratio.get());
 		CursedBlade.LIFE_STEAL = Integer.parseInt(XMLFileJava.readElement("LifeSteal"));
@@ -366,14 +358,35 @@ public class XMLFileJava {
 		CursedBlade.STATUS = Config.COMMON.default_status.get();
 	}
 
+	public static void load(PlayerEntity player) {
+		checkFileAndMake();
+		CursedBlade.KILL_COUNTER = Integer.parseInt(XMLFileJava.readElement("KillCount"));
+		CursedBlade.ATTACK_DAMAGE = (int) (Config.COMMON.starting_attack_damage.get() + CursedBlade.KILL_COUNTER * Config.COMMON.damage_ratio.get());
+		CursedBlade.LIFE_STEAL = Integer.parseInt(XMLFileJava.readElement("LifeSteal"));
+		CursedBlade.POISON = Integer.parseInt(XMLFileJava.readElement("Poison"));
+		CursedBlade.WITHER = Integer.parseInt(XMLFileJava.readElement("Wither"));
+		CursedBlade.HUNGER = Integer.parseInt(XMLFileJava.readElement("Hunger"));
+		CursedBlade.EXHAUST = Integer.parseInt(XMLFileJava.readElement("Exhaust"));
+		CursedBlade.FIRE_ASPECT = Boolean.parseBoolean(XMLFileJava.readElement("FireAspect"));
+		CursedBlade.DESTROY_ABSORPTION = Boolean.parseBoolean(XMLFileJava.readElement("AbsorptionDestruction"));
+		CursedBlade.DESTROY_SHIELDS = Boolean.parseBoolean(XMLFileJava.readElement("ShieldDestruction"));
+		CursedBlade.STATUS = Config.COMMON.default_status.get();
+
+		CompoundNBT nbt = player.serializeNBT().getCompound("ForgeCaps");
+		if (nbt.getCompound("ageoftitans:stats").getInt("player_level") > 0) {
+			CursedBlade.STATUS = "Awakened";
+		}
+
+	}
+
 	public static void loadUUID() {
 		if (XMLFileJava.readElement("PlayerUUID").equals(default_player_uuid))
 			return;
 		CursedBlade.PLAYER_UUID = UUID.fromString(XMLFileJava.readElement("PlayerUUID"));
 	}
 
-	public static void save(PlayerEntity player) {
-		checkFileAndMake(player);
+	public static void save() {
+		checkFileAndMake();
 		if (CursedBlade.PLAYER_UUID != null) {
 			XMLFileJava.editElement("KillCount", Integer.toString(CursedBlade.KILL_COUNTER));
 			XMLFileJava.editElement("LifeSteal", Integer.toString(CursedBlade.LIFE_STEAL));

@@ -1,10 +1,6 @@
 package com.GenZVirus.CursedBlade.Common.Item;
 
-import java.util.List;
-
-import com.GenZVirus.CursedBlade.CursedBlade;
-import com.GenZVirus.CursedBlade.Common.Network.PacketHandlerCommon;
-import com.GenZVirus.CursedBlade.Common.Network.Packets.SendCursedPlayerData;
+import com.GenZVirus.CursedBlade.Common.Entities.FlamesOfUndoingEntity;
 import com.GenZVirus.CursedBlade.File.XMLFileJava;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
@@ -19,7 +15,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -32,11 +27,9 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkDirection;
 
 public class CursedBladeWeapon extends TieredItem {
 
@@ -46,7 +39,8 @@ public class CursedBladeWeapon extends TieredItem {
 
 	public CursedBladeWeapon(IItemTier tier, Item.Properties builderIn) {
 		super(tier, builderIn);
-		this.attackDamage = 0;
+		XMLFileJava.loadDamage();
+		this.attackDamage = (float) com.GenZVirus.CursedBlade.CursedBlade.ATTACK_DAMAGE;
 		Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
 		builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", (double) this.attackDamage, AttributeModifier.Operation.ADDITION));
 		builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", 0, AttributeModifier.Operation.ADDITION));
@@ -59,6 +53,7 @@ public class CursedBladeWeapon extends TieredItem {
 	}
 
 	public void reload() {
+		XMLFileJava.loadDamage();
 		if (com.GenZVirus.CursedBlade.CursedBlade.CURSED_PLAYER != null)
 			XMLFileJava.load(com.GenZVirus.CursedBlade.CursedBlade.CURSED_PLAYER);
 		this.attackDamage = (float) com.GenZVirus.CursedBlade.CursedBlade.ATTACK_DAMAGE;
@@ -167,34 +162,24 @@ public class CursedBladeWeapon extends TieredItem {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
 		if (com.GenZVirus.CursedBlade.CursedBlade.STATUS.equals("Awakened")) {
-			AxisAlignedBB CUBE_BOX = VoxelShapes.fullCube().getBoundingBox();
-			AxisAlignedBB aabb = CUBE_BOX.offset(playerIn.getPositionVec()).grow(100);
-			List<Entity> list = playerIn.world.getEntitiesWithinAABBExcludingEntity(playerIn, aabb);
-			int size = 0;
-			for (Entity entity : list) {
-				if (entity instanceof LivingEntity) {
-					size++;
-					((LivingEntity) entity).clearActivePotions();
-					if (entity instanceof PlayerEntity) {
-						((PlayerEntity) entity).inventory.clear();
-					}
-					if (entity instanceof EnderDragonEntity) {
-						((EnderDragonEntity) entity).attackEntityPartFrom(((EnderDragonEntity) entity).dragonPartHead,
-								new CursedDamage("CursedBlade").setDamageAllowedInCreativeMode().setDamageBypassesArmor().setDamageIsAbsolute(), Float.MAX_VALUE);
-					} else {
-						((LivingEntity) entity).attackEntityFrom(new CursedDamage("CursedBlade").setDamageAllowedInCreativeMode().setDamageBypassesArmor().setDamageIsAbsolute(), Float.MAX_VALUE);
-					}
-				}
-			}
-			if (size > 0 && !worldIn.isRemote) {
-				XMLFileJava.add("KillCount", size);
-				XMLFileJava.load(com.GenZVirus.CursedBlade.CursedBlade.CURSED_PLAYER);
-				PacketHandlerCommon.INSTANCE.sendTo(new SendCursedPlayerData(com.GenZVirus.CursedBlade.CursedBlade.KILL_COUNTER, com.GenZVirus.CursedBlade.CursedBlade.ATTACK_DAMAGE,
-						com.GenZVirus.CursedBlade.CursedBlade.LIFE_STEAL, com.GenZVirus.CursedBlade.CursedBlade.DESTROY_ABSORPTION, com.GenZVirus.CursedBlade.CursedBlade.DESTROY_SHIELDS,
-						com.GenZVirus.CursedBlade.CursedBlade.FIRE_ASPECT, com.GenZVirus.CursedBlade.CursedBlade.POISON, com.GenZVirus.CursedBlade.CursedBlade.WITHER,
-						com.GenZVirus.CursedBlade.CursedBlade.STATUS, CursedBlade.HUNGER, CursedBlade.EXHAUST), com.GenZVirus.CursedBlade.CursedBlade.CURSED_PLAYER.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
-
-			}
+			double offset = 1.0D;
+			double pitch = playerIn.getPitchYaw().x;
+			double yaw = playerIn.getPitchYaw().y;
+			double pitchRadian = pitch * (Math.PI / 180); // X rotation
+			double yawRadian = yaw * (Math.PI / 180); // Y rotation
+			double newPosX = offset * -Math.sin(yawRadian) * Math.cos(pitchRadian);
+			double newPosY = offset * -Math.sin(pitchRadian);
+			double newPosZ = offset * Math.cos(yawRadian) * Math.cos(pitchRadian);
+			FlamesOfUndoingEntity swordslashentity = new FlamesOfUndoingEntity(playerIn.world, playerIn, newPosX, newPosY, newPosZ);
+			double d0 = (double) MathHelper.sqrt(newPosX * newPosX + newPosY * newPosY + newPosZ * newPosZ);
+			swordslashentity.accelerationX = newPosX / d0 * 0.5D;
+			swordslashentity.accelerationY = newPosY / d0 * 0.5D;
+			swordslashentity.accelerationZ = newPosZ / d0 * 0.5D;
+			swordslashentity.rotationPitch = (float) pitch;
+			swordslashentity.rotationYaw = (float) yaw;
+			swordslashentity.setRawPosition(playerIn.getPosX(), 1.0D + playerIn.getPosY(), playerIn.getPosZ());
+			swordslashentity.setDamage(this.attackDamage);
+			playerIn.world.addEntity(swordslashentity);
 		}
 		ItemStack itemstack = playerIn.getHeldItem(handIn);
 		playerIn.setActiveHand(handIn);

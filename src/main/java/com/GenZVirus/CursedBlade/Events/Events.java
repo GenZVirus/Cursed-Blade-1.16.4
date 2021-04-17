@@ -165,7 +165,7 @@ public class Events {
 		if (CursedBlade.CURSED_PLAYER.equals(event.getEntityLiving()) && event.getSource().getTrueSource() instanceof PlayerEntity) {
 			CursedBlade.CURSED_PLAYER = (ServerPlayerEntity) event.getSource().getTrueSource();
 			CursedBlade.PLAYER_UUID = event.getSource().getTrueSource().getUniqueID();
-			XMLFileJava.save(CursedBlade.CURSED_PLAYER);
+			XMLFileJava.save();
 		}
 	}
 
@@ -221,7 +221,6 @@ public class Events {
 	public static void onItemToss(ItemTossEvent event) {
 		if (event.getEntityItem().getItem().getItem() instanceof CursedBladeWeapon) {
 			event.getEntityItem().setNoPickupDelay();
-			;
 			mustReload = true;
 		}
 	}
@@ -240,14 +239,14 @@ public class Events {
 			if (CursedBlade.PLAYER_UUID == null) {
 				CursedBlade.PLAYER_UUID = player.getUniqueID();
 				CursedBlade.CURSED_PLAYER = player;
-				ItemStack stack = CursedBlade.CURSED_PLAYER.inventory.getStackInSlot(0);
-				if (!CursedBlade.CURSED_PLAYER.inventory.addItemStackToInventory(stack)) {
-					CursedBlade.CURSED_PLAYER.inventory.removeStackFromSlot(0);
-					CursedBlade.CURSED_PLAYER.dropItem(stack, false);
+				ItemStack stack = player.inventory.getStackInSlot(0);
+				if (!player.inventory.addItemStackToInventory(stack)) {
+					player.inventory.removeStackFromSlot(0);
+					player.dropItem(stack, false);
 				} else {
-					CursedBlade.CURSED_PLAYER.inventory.removeStackFromSlot(0);
+					player.inventory.removeStackFromSlot(0);
 				}
-				XMLFileJava.save(CursedBlade.CURSED_PLAYER);
+				XMLFileJava.save();
 				PacketHandlerCommon.INSTANCE.sendTo(
 						new SendCursedPlayerData(CursedBlade.KILL_COUNTER, CursedBlade.ATTACK_DAMAGE, CursedBlade.LIFE_STEAL, CursedBlade.DESTROY_ABSORPTION, CursedBlade.DESTROY_SHIELDS,
 								CursedBlade.FIRE_ASPECT, CursedBlade.POISON, CursedBlade.WITHER, CursedBlade.STATUS, CursedBlade.HUNGER, CursedBlade.EXHAUST),
@@ -289,7 +288,7 @@ public class Events {
 	public static void onCursedPlayerLogin(PlayerLoggedInEvent event) {
 		if (event.getEntityLiving().world.isRemote)
 			return;
-		XMLFileJava.checkFileAndMake(event.getPlayer());
+		XMLFileJava.checkFileAndMake();
 		XMLFileJava.loadUUID();
 		if (CursedBlade.PLAYER_UUID == null)
 			return;
@@ -325,7 +324,7 @@ public class Events {
 	public static void onCursedPlayerLogout(PlayerLoggedOutEvent event) {
 		if (event.getEntityLiving().world.isRemote)
 			return;
-		XMLFileJava.save(event.getPlayer());
+		XMLFileJava.save();
 		if (CursedBlade.PLAYER_UUID == null)
 			return;
 		if (CursedBlade.PLAYER_UUID.equals(event.getPlayer().getUniqueID())) {

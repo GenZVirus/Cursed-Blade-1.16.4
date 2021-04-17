@@ -3,6 +3,8 @@ package com.GenZVirus.CursedBlade.Common;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.GenZVirus.CursedBlade.CursedBlade;
+import com.GenZVirus.CursedBlade.Common.Init.ItemInit;
+import com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
@@ -80,7 +82,7 @@ public abstract class Config {
 
 	@SubscribeEvent
 	public static void onLoad(final ModConfig.Loading event) {
-
+		((CursedBladeWeapon)ItemInit.CURSED_BLADE.get()).reload();
 	}
 
 	@SubscribeEvent
