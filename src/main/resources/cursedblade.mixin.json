@@ -1,0 +1,11 @@
+{
+"required": true,
+"package": "com.GenZVirus.CursedBlade.Mixin",
+"compatibilityLevel": "JAVA_8",
+"client": [
+	"MixinItemRenderer",
+	"MixinDamageSource",
+	"MixinDisplayEffectsScreen"
+],
+"refmap": "cursedblade.mixin-refmap.json"
+}

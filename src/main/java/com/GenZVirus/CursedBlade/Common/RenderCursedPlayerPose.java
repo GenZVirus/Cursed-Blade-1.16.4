@@ -93,9 +93,10 @@ public class RenderCursedPlayerPose {
 		boolean flag = !entityIn.isInvisible();
 		boolean flag1 = !flag && !entityIn.isInvisibleToPlayer(minecraft.player);
 		boolean flag2 = minecraft.isEntityGlowing(entityIn);
-		matrixStackIn.rotate(new Quaternion(0.0F, -45.0F, 0.0F, true));
-		model.bipedRightArm.rotateAngleY = 1.0F;
-		model.bipedHead.rotateAngleY = 1.0F;
+		matrixStackIn.rotate(new Quaternion(0.0F, -90.0F, 0.0F, true));
+//		model.bipedRightArm.rotateAngleY = (float) (Math.PI / 2);
+		model.bipedRightArm.rotateAngleY = (float) (Math.PI / 2);
+		model.bipedHead.rotateAngleY = (float) (Math.PI / 2);
 		RenderType rendertype = func_230496_a_(entityIn, flag, flag1, flag2, model);
 		if (rendertype != null) {
 			IVertexBuilder ivertexbuilder = bufferIn.getBuffer(rendertype);
@@ -105,7 +106,17 @@ public class RenderCursedPlayerPose {
 
 		if (!entityIn.isSpectator()) {
 			for (LayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> layerrenderer : layerRenderers) {
-				layerrenderer.render(matrixStackIn, bufferIn, packedLightIn, entityIn, f5, f8, partialTicks, f7, f2, f6);
+//				if (layerrenderer instanceof HeldItemLayer<?, ?>) {
+//					matrixStackIn.rotate(new Quaternion(0.0F, 0.0F, -90.0F, true));
+//					matrixStackIn.rotate(new Quaternion(0.0F, 90.0F, 0.0F, true));
+//					matrixStackIn.translate(0.8D, -0.9D, -0.15D);
+//					layerrenderer.getEntityModel().render(matrixStackIn, bufferIn, packedLightIn, entityIn, f5, f8, partialTicks, f7, f2, f6);
+//					matrixStackIn.translate(-0.8D, 0.9D, 0.15D);
+//					matrixStackIn.rotate(new Quaternion(0.0F, -90.0F, 0.0F, true));
+//					matrixStackIn.rotate(new Quaternion(0.0F, 0.0F, 90.0F, true));
+//				} else {
+					layerrenderer.render(matrixStackIn, bufferIn, packedLightIn, entityIn, f5, f8, partialTicks, f7, f2, f6);
+//				}
 			}
 		}
 
@@ -113,9 +124,9 @@ public class RenderCursedPlayerPose {
 	}
 
 	public static int getPackedOverlay(LivingEntity livingEntityIn, float uIn) {
-	      return OverlayTexture.getPackedUV(OverlayTexture.getU(uIn), OverlayTexture.getV(livingEntityIn.hurtTime > 0 || livingEntityIn.deathTime > 0));
-	   }
-	
+		return OverlayTexture.getPackedUV(OverlayTexture.getU(uIn), OverlayTexture.getV(livingEntityIn.hurtTime > 0 || livingEntityIn.deathTime > 0));
+	}
+
 	@Nullable
 	protected static RenderType func_230496_a_(AbstractClientPlayerEntity entityIn, boolean p_230496_2_, boolean p_230496_3_, boolean p_230496_4_, BipedModel<AbstractClientPlayerEntity> model) {
 		ResourceLocation resourcelocation = entityIn.getLocationSkin();
@@ -129,20 +140,20 @@ public class RenderCursedPlayerPose {
 	}
 
 	private static float getFacingAngle(Direction facingIn) {
-	      switch(facingIn) {
-	      case SOUTH:
-	         return 90.0F;
-	      case WEST:
-	         return 0.0F;
-	      case NORTH:
-	         return 270.0F;
-	      case EAST:
-	         return 180.0F;
-	      default:
-	         return 0.0F;
-	      }
-	   }
-	
+		switch (facingIn) {
+		case SOUTH:
+			return 90.0F;
+		case WEST:
+			return 0.0F;
+		case NORTH:
+			return 270.0F;
+		case EAST:
+			return 180.0F;
+		default:
+			return 0.0F;
+		}
+	}
+
 	protected static void applyRotations(AbstractClientPlayerEntity entityLiving, MatrixStack matrixStackIn, float ageInTicks, float rotationYaw, float partialTicks) {
 		Pose pose = entityLiving.getPose();
 		if (pose != Pose.SLEEPING) {

@@ -3,6 +3,7 @@ package com.GenZVirus.CursedBlade.Events;
 import java.util.List;
 
 import com.GenZVirus.CursedBlade.CursedBlade;
+import com.GenZVirus.CursedBlade.CursedBlade.CursedBladeStats;
 import com.GenZVirus.CursedBlade.Common.Config;
 import com.GenZVirus.CursedBlade.Common.RenderCursedPlayerPose;
 import com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon;
@@ -61,12 +62,12 @@ public class ItemToolTipEventsHandler {
 		// Add new line
 		text.add(new TranslationTextComponent(""));
 
-		if (CursedBlade.STATUS.equals("Dormant")) {
+		if (CursedBladeStats.STATUS.equals("Dormant")) {
 			// Add new line
-			text.add(new TranslationTextComponent("\u00A7o" + "Status: " + "\u00A7r\u00A77" + CursedBlade.STATUS));
+			text.add(new TranslationTextComponent("\u00A7o" + "Status: " + "\u00A7r\u00A77" + CursedBladeStats.STATUS));
 		} else {
 			// Add new line
-			text.add(new TranslationTextComponent("\u00A7o" + "Status: " + "\u00A7r\u00A7e" + CursedBlade.STATUS));
+			text.add(new TranslationTextComponent("\u00A7o" + "Status: " + "\u00A7r\u00A7e" + CursedBladeStats.STATUS));
 
 		}
 
@@ -74,53 +75,53 @@ public class ItemToolTipEventsHandler {
 		text.add(new TranslationTextComponent(""));
 
 		// Add Kill Count
-		text.add(new TranslationTextComponent("\u00A78" + "Kill Counter: " + CursedBlade.KILL_COUNTER));
+		text.add(new TranslationTextComponent("\u00A78" + "Kill Counter: " + CursedBladeStats.KILL_COUNTER));
 
 		// Add new line
 		text.add(new TranslationTextComponent(""));
 
-		if (CursedBlade.FIRE_ASPECT) {
+		if (CursedBladeStats.FIRE_ASPECT) {
 			// Add fire aspect
 			text.add(new TranslationTextComponent("\u00A76" + "Fire Aspect"));
 		}
 
-		if (CursedBlade.DESTROY_ABSORPTION) {
+		if (CursedBladeStats.DESTROY_ABSORPTION) {
 			// Add destroy absorption
 			text.add(new TranslationTextComponent("\u00A71" + "Destroy Absorption"));
 		}
 
-		if (CursedBlade.DESTROY_SHIELDS) {
+		if (CursedBladeStats.DESTROY_SHIELDS) {
 			// Add destroy shields
 			text.add(new TranslationTextComponent("\u00A7f" + "Shield Breaker"));
 		}
 
-		if (CursedBlade.LIFE_STEAL > 0) {
+		if (CursedBladeStats.LIFE_STEAL > 0) {
 			// Add life steal
-			text.add(new TranslationTextComponent("\u00A7c" + "Life Steal: " + (CursedBlade.LIFE_STEAL * Config.COMMON.life_steal_ratio.get()) + "%"));
+			text.add(new TranslationTextComponent("\u00A7c" + "Life Steal: " + (CursedBladeStats.LIFE_STEAL * Config.COMMON.life_steal_ratio.get()) + "%"));
 		}
 
-		if (CursedBlade.POISON > 0) {
+		if (CursedBladeStats.POISON > 0) {
 			// Add Poison
-			text.add(new TranslationTextComponent("\u00A7a" + "Poison " + CursedBlade.POISON));
+			text.add(new TranslationTextComponent("\u00A7a" + "Poison " + CursedBladeStats.POISON));
 		}
 
-		if (CursedBlade.WITHER > 0) {
+		if (CursedBladeStats.WITHER > 0) {
 			// Add Wither
-			text.add(new TranslationTextComponent("\u00A78" + "Wither " + CursedBlade.WITHER));
+			text.add(new TranslationTextComponent("\u00A78" + "Wither " + CursedBladeStats.WITHER));
 		}
 		
-		if (CursedBlade.HUNGER > 0) {
+		if (CursedBladeStats.HUNGER > 0) {
 			// Add Hunger
-			text.add(new TranslationTextComponent("\u00A72" + "Hunger " + CursedBlade.HUNGER));
+			text.add(new TranslationTextComponent("\u00A72" + "Hunger " + CursedBladeStats.HUNGER));
 		}
 
-		if (CursedBlade.EXHAUST > 0) {
+		if (CursedBladeStats.EXHAUST > 0) {
 			// Add Wither
-			text.add(new TranslationTextComponent("\u00A74" + "Exhaust " + CursedBlade.EXHAUST));
+			text.add(new TranslationTextComponent("\u00A74" + "Exhaust " + CursedBladeStats.EXHAUST));
 		}
 
 		// Add Damage
-		text.add(new TranslationTextComponent("\u00A7c" + "Attack Damage: " + (CursedBlade.ATTACK_DAMAGE + 1)));
+		text.add(new TranslationTextComponent("\u00A7c" + "Attack Damage: " + (CursedBladeStats.ATTACK_DAMAGE + 1)));
 
 		event.getToolTip().clear();
 		event.getToolTip().addAll(text);

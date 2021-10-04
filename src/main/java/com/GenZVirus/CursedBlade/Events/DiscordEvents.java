@@ -12,14 +12,11 @@ import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
 import net.minecraft.client.gui.screen.OptionsScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.inventory.InventoryScreen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
@@ -56,8 +53,6 @@ public class DiscordEvents {
 
 	@SubscribeEvent
 	public static void DiscordBackground(DrawScreenEvent.Pre event) {
-		if (event.getGui() instanceof InventoryScreen)
-			System.out.println(DimensionType.getDimensionFolder(World.OVERWORLD, mc.getSaveLoader().getSavesDir().toFile()));
 		if (ModList.get().isLoaded("betterux") || ModList.get().isLoaded("mobplusplus")) {
 			return;
 		}

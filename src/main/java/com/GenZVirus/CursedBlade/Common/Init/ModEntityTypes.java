@@ -16,8 +16,8 @@ public class ModEntityTypes {
 			CursedBlade.MOD_ID);
 
 	public static final RegistryObject<EntityType<FlamesOfUndoingEntity>> FLAMES_OF_UNDOING = ENTITY_TYPES.register("flamesofundoing",
-			() -> EntityType.Builder.<FlamesOfUndoingEntity>create(FlamesOfUndoingEntity::new, EntityClassification.CREATURE)
-					.size(0.5F, 0.5F)
+			() -> EntityType.Builder.<FlamesOfUndoingEntity>create(FlamesOfUndoingEntity::new, EntityClassification.MISC)
+					.size(0.1F, 0.1F)
 					.build(new ResourceLocation(CursedBlade.MOD_ID, "flamesofundoing").toString()));
 	
 }

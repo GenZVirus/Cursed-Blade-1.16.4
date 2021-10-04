@@ -3,8 +3,6 @@ package com.GenZVirus.CursedBlade.Common;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.GenZVirus.CursedBlade.CursedBlade;
-import com.GenZVirus.CursedBlade.Common.Init.ItemInit;
-import com.GenZVirus.CursedBlade.Common.Item.CursedBladeWeapon;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
@@ -29,9 +27,9 @@ public abstract class Config {
 		public final DoubleValue life_steal_ratio;
 		public final BooleanValue destroyAbsorption;
 		public final IntValue dropChance;
-		public final ForgeConfigSpec.ConfigValue<String> default_status;
 		public final IntValue whenToUpgrade;
 		public final IntValue whenToBreakBlocks;
+		public final BooleanValue testerMode;
 
 		public Common(ForgeConfigSpec.Builder builder) {
 
@@ -40,14 +38,13 @@ public abstract class Config {
 			builder.push("Cursed Blade");
 
 			starting_attack_damage = builder.comment("Starting damage of the cursed blade").worldRestart().defineInRange("Starting Damage", 6, 0, Integer.MAX_VALUE);
-			damage_ratio = builder.comment("The rate at which the damage scales per kill").worldRestart().defineInRange("Damage Ratio", 0.1D, 0.0D, 1.0D);
+			damage_ratio = builder.comment("The rate at which the damage scales per kill").worldRestart().defineInRange("Damage Ratio", 0.5D, 0.0D, 1.0D);
+			dropChance = builder.comment("The drop chance is calculated like this: 1 / Drop Chance.").worldRestart().defineInRange("Drop Chance", 10000, 1, Integer.MAX_VALUE);
+			whenToUpgrade = builder.comment("Upgrades are made every X amount of kills. Change the value to change when the upgrades are made.").worldRestart().defineInRange("When to Upgrade", 100, 1, 100000);
 			life_steal_ratio  = builder.comment("The rate at which the life steal scales pe bonus upgrade").worldRestart().defineInRange("Life Steal Ratio", 0.1D, 0.0D, 100.0D);
 			destroyAbsorption = builder.worldRestart().define("Destroy all absorption on hit", true);
-			dropChance = builder.comment("The drop chance is calculated like this: 1 / Drop Chance.").worldRestart().defineInRange("Drop Chance", 10000, 1, Integer.MAX_VALUE);
-			default_status = builder.comment("Set status to Awakened to enable the ability or Dormant to disable it.").worldRestart().define("Status", "Dormant");
-			whenToUpgrade = builder.comment("Upgrades are made every X amount of kills. Change the value to change when the upgrades are made.").worldRestart().defineInRange("When to Upgrade", 100, 1, 100000);
 			whenToBreakBlocks = builder.comment("After reaching the following amount of damage, the blade will destroy blocks when hitting them, but will not drop.").worldRestart().defineInRange("When to break blocks", 500, 1, 100000);
-
+			testerMode = builder.worldRestart().comment("Set Tester Mode to true if you want to enable tester commands").define("Tester Mode", false);
 			builder.pop();
 		}
 
@@ -82,7 +79,7 @@ public abstract class Config {
 
 	@SubscribeEvent
 	public static void onLoad(final ModConfig.Loading event) {
-		((CursedBladeWeapon)ItemInit.CURSED_BLADE.get()).reload();
+//		((CursedBladeWeapon)ItemInit.CURSED_BLADE.get()).reload();
 	}
 
 	@SubscribeEvent

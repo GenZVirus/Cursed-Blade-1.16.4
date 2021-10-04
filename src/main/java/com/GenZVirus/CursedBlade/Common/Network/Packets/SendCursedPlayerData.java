@@ -2,7 +2,7 @@ package com.GenZVirus.CursedBlade.Common.Network.Packets;
 
 import java.util.function.Supplier;
 
-import com.GenZVirus.CursedBlade.CursedBlade;
+import com.GenZVirus.CursedBlade.CursedBlade.CursedBladeStats;
 
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkDirection;
@@ -58,17 +58,17 @@ public class SendCursedPlayerData {
 
 		ctx.get().enqueueWork(() -> {
 			if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
-				CursedBlade.KILL_COUNTER = pkt.kill_counter;
-				CursedBlade.ATTACK_DAMAGE = pkt.attack_damage;
-				CursedBlade.LIFE_STEAL = pkt.life_steal;
-				CursedBlade.DESTROY_ABSORPTION = pkt.destroy_absorption;
-				CursedBlade.DESTROY_SHIELDS = pkt.destroy_shields;
-				CursedBlade.FIRE_ASPECT = pkt.fire_aspect;
-				CursedBlade.POISON = pkt.poison;
-				CursedBlade.WITHER = pkt.wither;
-				CursedBlade.STATUS = pkt.status;
-				CursedBlade.HUNGER = pkt.hunger;
-				CursedBlade.EXHAUST = pkt.exhaust;
+				CursedBladeStats.KILL_COUNTER = pkt.kill_counter;
+				CursedBladeStats.ATTACK_DAMAGE = pkt.attack_damage;
+				CursedBladeStats.LIFE_STEAL = pkt.life_steal;
+				CursedBladeStats.DESTROY_ABSORPTION = pkt.destroy_absorption;
+				CursedBladeStats.DESTROY_SHIELDS = pkt.destroy_shields;
+				CursedBladeStats.FIRE_ASPECT = pkt.fire_aspect;
+				CursedBladeStats.POISON = pkt.poison;
+				CursedBladeStats.WITHER = pkt.wither;
+				CursedBladeStats.STATUS = pkt.status;
+				CursedBladeStats.HUNGER = pkt.hunger;
+				CursedBladeStats.EXHAUST = pkt.exhaust;
 			}
 		});
 		ctx.get().setPacketHandled(true);

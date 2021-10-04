@@ -1,6 +1,7 @@
 package com.GenZVirus.CursedBlade.Common.Network;
 
 import com.GenZVirus.CursedBlade.CursedBlade;
+import com.GenZVirus.CursedBlade.Common.Network.Packets.SendBladeCoords;
 import com.GenZVirus.CursedBlade.Common.Network.Packets.SendCursedPlayerData;
 
 import net.minecraft.util.ResourceLocation;
@@ -16,5 +17,6 @@ public class PacketHandlerCommon {
 		int id = 0;
 
 		INSTANCE.messageBuilder(SendCursedPlayerData.class, id++).encoder(SendCursedPlayerData::encode).decoder(SendCursedPlayerData::decode).consumer(SendCursedPlayerData::handle).add();
+		INSTANCE.messageBuilder(SendBladeCoords.class, id++).encoder(SendBladeCoords::encode).decoder(SendBladeCoords::decode).consumer(SendBladeCoords::handle).add();
 	}
 }
